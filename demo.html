@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="mxray-player-container.html">
+  </head>
+  <body>
+    <!-- connects all the UI components to an external audio component -->
+    <!-- If an external audio selector is provided the control will use that as it's source -->
+    <!-- If there is an audio tag inside of the player container, the sources of that audio tag will 
+      be synced to the external audio sources before playing -->
+    <mxray-player-container>
+      <mxray-play-button>
+      </mxray-play-button>
+      <audio> 	
+	
+      </audio>
+    </mxray-player-container>
+  </body>
+</html>
