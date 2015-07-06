@@ -1,0 +1,31 @@
+{
+  "name": "mxray-player-container",
+  "version": "0.0.0",
+  "homepage": "https://github.com/musicxrayinc/mxray-player-container",
+  "authors": [
+    "jeff durand <jeff.durand@gmail.com>"
+  ],
+  "description": "Container for managing interaction of media play controls",
+  "main": "mxray-player-container.html",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "music",
+    "xray",
+    "mp3",
+    "player"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.3",
+    "polymer": "polymer/polymer#^1.0.3"
+  }
+}
