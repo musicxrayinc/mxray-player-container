@@ -26,6 +26,8 @@
   ],
   "dependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.3",
-    "polymer": "polymer/polymer#^1.0.3"
+    "polymer": "polymer/polymer#^1.0.3",
+    "mxray-play-button": "latest",
+    "iron-signal": "PolymerElements/iron-signals#^1.0.1"
   }
 }

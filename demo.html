@@ -4,20 +4,62 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
-    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../mxray-play-button/mxray-play-button.html">
     <link rel="import" href="mxray-player-container.html">
+    <link rel="import" href="mxray-audio-wrapper.html">
   </head>
   <body>
+
+    <!-- mxray-audio-wrapper translates events into polymer events -->
+    <audio is="mxray-audio-wrapper" preload="none" id="mxray-global-audio"></audio>
+    
+
     <!-- connects all the UI components to an external audio component -->
     <!-- If an external audio selector is provided the control will use that as it's source -->
     <!-- If there is an audio tag inside of the player container, the sources of that audio tag will 
-      be synced to the external audio sources before playing -->
-    <mxray-player-container>
-      <mxray-play-button>
+    be synced to the external audio sources before playing this is the component we use to wire all these pieces together.
+    the player container basically listens to and controls the mxray-global-audio
+    -->
+    <mxray-player-container audio_id="mxray-global-audio">
+      
+      <mxray-play-button>	
+	<span class="play">Play</span>
+	<span class="pause">Pause</span>
+	<span class="loading">Loading</span>
       </mxray-play-button>
-      <audio> 	
-	
-      </audio>
+
+      <source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3.m3u8" >
+      <source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3" type="audio/mpeg">
+
+      <!-- audio playing show the play button -->
+      <!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
+      <!-- progress bar -->
+      <!-- eventual support for volume control -->
+      <!-- eventual support for visualization -->
+
     </mxray-player-container>
+    <hr/>
+    <h3>Need to make sure it works with multiple players on the same page...</h3>
+    <mxray-player-container audio_id="mxray-global-audio">
+      <mxray-play-button>	
+	<span class="play">Play 2</span>
+	<span class="pause">Pause 2</span>
+	<span class="loading">Loading 2</span>
+      </mxray-play-button>
+      
+      <source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3.m3u8" >
+      <source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3" type="audio/mpeg">
+      
+      <!-- audio playing show the play button -->
+      <!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
+      <!--<audio></audio>-->
+      <!-- progress bar -->
+      <!-- eventual support for volume control -->
+      <!-- eventual support for visualization -->
+
+    </mxray-player-container>
+
   </body>
+
 </html>

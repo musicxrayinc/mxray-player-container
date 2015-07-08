@@ -1,0 +1,121 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-signal/iron-signals.html">
+<dom-module id="mxray-player-container">
+  <template>
+    <!-- We are using this method to communicate audio events to avoid thousands of event listeners and audio tags -->
+    <iron-signals 
+      on-iron-signal-audioloadedmetadata="_handleMetaData"
+      on-iron-signal-audiocanplay="_handleCanPlay"
+      on-iron-signal-audioplay="_handlePlay"
+      on-iron-signal-audiopause="_handlePause"
+      on-iron-signal-audioloadstart="_handleLoadStart"
+      on-iron-signal-audiotimeupdate="_handleTimeUpdate"
+    ></iron-signals>
+    <span id="playbutton" on-click="_handlePlayClick"><content select="mxray-play-button"></content></span>
+    <span id="audiotag"><content select="source"></content></span>
+    <span>duration: <span>{{duration}}</span></span>
+    <span>current time: <span>{{currentTime}}</span></span>
+  </template>
+  <script>
+    Polymer({
+      is: 'mxray-player-container',
+      properties: {
+	audio_id: {
+	  type: String,
+	  value: null,
+	  notify: true,
+	  observer: "_audioSelectorChanged"
+	},
+	audio_object: {
+	  type: Object,
+	  computed: "_audio_object(audio_id)"
+	},
+	play_btn: Object,
+	duration: {
+	  type: Number,
+	  value: null
+	},
+	currentTime: {
+	  type: Number,
+	  value: null
+	}
+      },
+      _audio_object: function(audio_id){
+	return window.document.querySelector('#'+audio_id);
+      },
+      _handlePlayClick: function(){ 
+	/* 
+	* if we are pressing the button on the currently active song 
+	* then we are just going to pause things we should probably be
+	* storing the position of the playhead on this element that way
+	* if we go back to playing this audio we can pick up where we
+	* left off.  Don't store...
+	*/
+	if(this === this.audio_object.currentlyActive){
+	  if(this.audio_object.paused){
+	    this.audio_object.play();
+	  }else{
+	    this.audio_object.pause();
+	  }
+	}else{
+
+	  // pause whatever audio is currently playing.
+	  this.audio_object.pause();
+	  // store a reference to the currently active player state
+	  this.audio_object.currentlyActive = this;
+	  // copy internal sources to the audio tag and start loading
+	  this.audio_object.innerHTML = this.$.audiotag.innerHTML;
+	  this.audio_object.load();
+	}
+	
+      },
+      _audioSelectorChanged: function(){},
+      // audio event handlers....
+      _handleLoadStart: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this.play_btn.loading = true;
+	} else {
+	  // everything that isn't currently active should be in the paused state
+	  this.play_btn.playing = false;
+	  this.play_btn.loading = false;
+	}
+      },
+      _handleMetaData: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this.duration = this.audio_object.duration; 	  
+	}else{
+	  // make sure button state is paused
+	  
+	}
+      },
+      _setPlayState: function(){
+	this.play_btn.playing = !this.audio_object.paused;
+      },
+      _handlePause: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this._setPlayState();
+	}
+      },
+      _handlePlay: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this._setPlayState();
+	}
+      },
+      _handleCanPlay: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this.play_btn.loading = false;	
+	  this.audio_object.play();
+	}
+      },
+      _handleTimeUpdate: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this.currentTime = this.audio_object.currentTime;
+	}
+      },
+      // end audio event handlers....
+      ready: function(){
+	this.play_btn = this.$.playbutton.querySelector('mxray-play-button');
+      }
+    });
+  </script>
+</dom-module>
