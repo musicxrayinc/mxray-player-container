@@ -6,8 +6,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <script src="../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../mxray-play-button/mxray-play-button.html">
+    <link rel="import" href="../mxray-play-scrubber/mxray-play-scrubber.html">
     <link rel="import" href="mxray-player-container.html">
     <link rel="import" href="mxray-audio-wrapper.html">
+    <style>
+      mxray-play-scrubber {
+	display: block; 
+	width: 200px; 
+	height: 30px;
+      }
+    </style>
   </head>
   <body>
 
@@ -21,44 +29,98 @@
     be synced to the external audio sources before playing this is the component we use to wire all these pieces together.
     the player container basically listens to and controls the mxray-global-audio
     -->
-    <mxray-player-container audio_id="mxray-global-audio">
-      
-      <mxray-play-button>	
-	<span class="play">Play</span>
-	<span class="pause">Pause</span>
-	<span class="loading">Loading</span>
-      </mxray-play-button>
+    
+    <template is="dom-bind">
+      <!-- all of these components are meant as building blocks for actual player elements -->
+      <!-- as such we need to wrap it in a bind template so we can show how to wire things together -->
+      <!-- this keeps a lot of the data binding wiriing outside of the container logic -->
+      <mxray-player-container 
+	audio_id="mxray-global-audio" 
+	duration="{{_audioDuration}}" 
+	currenttime="{{_audioCurrentTime}}"
+	loading="{{_audioLoading}}"	
+	playing="{{_audioPlaying}}"
+	formatted_currenttime="{{_formattedCurrentTime}}"	
+	formatted_durationtime="{{_formattedDurationTime}}"
+	currentsecond="{{_currentSecond}}"
+	initload="metasingle">
+	
+	<!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
+	<source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3.m3u8" >
+	<source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3" type="audio/mpeg">
+	<!-- audio playing show the play button -->
+	<br/><br/>
+	<hr/>
+	<mxray-play-button style="display:block;" playing="{{_audioPlaying}}" loading="{{_audioLoading}}">	
+	  <span class="play">Play</span>
+	  <span class="pause">Pause</span>
+	  <span class="loading">Loading</span>
+	</mxray-play-button>
+	<!-- useful to have a scrub bar, final version will not require it -->
+	<!-- inline styles suck but hey whatever -->
+	<template is="dom-if" if="{{_audioDuration}}">
+	  <mxray-play-scrubber  
+	    playhead="{{_audioCurrentTime}}" 
+	    duration="{{_audioDuration}}"></mxray-play-scrubber>	
+	</template>
+	<!-- we will have a second scrub bar that can take markers -->		
 
-      <source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3.m3u8" >
-      <source src="//d1dfownqhoqzyo.cloudfront.net/171235/xrays/1609950/song/685a67c0069a0133c50b22000b4894bd.mp3" type="audio/mpeg">
+	
+	<span>{{_formattedCurrentTime}}</span> &mdash; <span>{{_formattedDurationTime}}</span>
+	<!-- eventual support for volume control -->
+	<!-- eventual support for visualization -->
 
-      <!-- audio playing show the play button -->
-      <!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
-      <!-- progress bar -->
-      <!-- eventual support for volume control -->
-      <!-- eventual support for visualization -->
-
-    </mxray-player-container>
+      </mxray-player-container>
+    </template>
     <hr/>
     <h3>Need to make sure it works with multiple players on the same page...</h3>
-    <mxray-player-container audio_id="mxray-global-audio">
-      <mxray-play-button>	
-	<span class="play">Play 2</span>
-	<span class="pause">Pause 2</span>
-	<span class="loading">Loading 2</span>
-      </mxray-play-button>
-      
-      <source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3.m3u8" >
-      <source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3" type="audio/mpeg">
-      
-      <!-- audio playing show the play button -->
-      <!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
-      <!--<audio></audio>-->
-      <!-- progress bar -->
-      <!-- eventual support for volume control -->
-      <!-- eventual support for visualization -->
 
-    </mxray-player-container>
+
+    <template is="dom-bind">
+      <!-- all of these components are meant as building blocks for actual player elements -->
+      <!-- as such we need to wrap it in a bind template so we can show how to wire things together -->
+      <!-- this keeps a lot of the data binding wiriing outside of the container logic -->
+      <mxray-player-container 
+	audio_id="mxray-global-audio" 
+	duration="{{_audioDuration}}" 
+	currenttime="{{_audioCurrentTime}}"
+	loading="{{_audioLoading}}"	
+	playing="{{_audioPlaying}}"
+	formatted_currenttime="{{_formattedCurrentTime}}"	
+	formatted_durationtime="{{_formattedDurationTime}}"
+	initload="metasingle">
+	
+	<!-- we allow source tags here.  All source tags are pushed over to the global audio tag if a selector exists --> 
+	<source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3.m3u8" >
+	<source src="//d1dfownqhoqzyo.cloudfront.net/177901/xrays/1608970/song/d84ee9e0060d0133ff6922000b4894bd.mp3" type="audio/mpeg">
+	<!-- audio playing show the play button -->
+	<div>duration: <span>{{_audioDuration}}</span></div>
+	<div>currentTime: <span>{{_audioCurrentTime}}</span></div>
+	<div>loading: <span>{{_audioLoading}}<span></div>
+	<div>playing: <span>{{_audioPlaying}}<span></div>
+	<br/><br/>
+	<hr/>
+	<mxray-play-button style="display:block;" playing="{{_audioPlaying}}" loading="{{_audioLoading}}">	
+	  <span class="play">Play</span>
+	  <span class="pause">Pause</span>
+	  <span class="loading">Loading</span>
+	</mxray-play-button>
+	<!-- useful to have a scrub bar, final version will not require it -->
+	<!-- inline styles suck but hey whatever -->
+	<template is="dom-if" if="{{_audioDuration}}">
+	  <mxray-play-scrubber  
+	    playhead="{{_audioCurrentTime}}" 
+	    duration="{{_audioDuration}}"></mxray-play-scrubber>	
+	</template>
+	<!-- we will have a second scrub bar that can take markers -->		
+
+	
+	<span>{{_formattedCurrentTime}}</span> &mdash; <span>{{_formattedDurationTime}}</span>
+	<!-- eventual support for volume control -->
+	<!-- eventual support for visualization -->
+
+      </mxray-player-container>
+    </template>
 
   </body>
 

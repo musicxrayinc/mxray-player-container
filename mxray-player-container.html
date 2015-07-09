@@ -2,7 +2,8 @@
 <link rel="import" href="../iron-signal/iron-signals.html">
 <dom-module id="mxray-player-container">
   <template>
-    <!-- We are using this method to communicate audio events to avoid thousands of event listeners and audio tags -->
+  <!-- We are using this method to communicate audio events to 
+  avoid thousands of event listeners and audio tags the idea is to use event delegation -->
     <iron-signals 
       on-iron-signal-audioloadedmetadata="_handleMetaData"
       on-iron-signal-audiocanplay="_handleCanPlay"
@@ -10,11 +11,10 @@
       on-iron-signal-audiopause="_handlePause"
       on-iron-signal-audioloadstart="_handleLoadStart"
       on-iron-signal-audiotimeupdate="_handleTimeUpdate"
+      on-iron-signal-audiowaiting="_handleWaiting"
     ></iron-signals>
-    <span id="playbutton" on-click="_handlePlayClick"><content select="mxray-play-button"></content></span>
     <span id="audiotag"><content select="source"></content></span>
-    <span>duration: <span>{{duration}}</span></span>
-    <span>current time: <span>{{currentTime}}</span></span>
+    <span id="uxcontent"><content></content></span>
   </template>
   <script>
     Polymer({
@@ -26,20 +26,84 @@
 	  notify: true,
 	  observer: "_audioSelectorChanged"
 	},
+	/**
+	 * "none" means we don't do any initialization until the user clicks play.
+	 * "metasingle" means we load enough to get the meta-data for the audio save to the control then destroy 
+	 *     the objects used to extract that information
+	 * "metamulti" the thing is if you initialize multiple but only have one audio element you may find things act crazy
+	 * "full" initialization means we download the url as a binary blob using the mp3 
+	 * in any case, while we are initializing we will set a initializing variable to true
+	 */
+	initload: {
+	  type: String,
+	  value: "none", 
+	},
 	audio_object: {
 	  type: Object,
 	  computed: "_audio_object(audio_id)"
 	},
-	play_btn: Object,
 	duration: {
 	  type: Number,
-	  value: null
+	  value: null,
+	  notify: true
 	},
-	currentTime: {
+	currentsecond: {
 	  type: Number,
-	  value: null
+	  value: 0,
+	  notify: true
+	},
+	currenttime: {
+	  type: Number,
+	  value: null,
+	  notify: true
+	},
+	formatted_currenttime: {
+	  type: String,
+	  computed: '_formatted_currenttime(currenttime)',
+	  notify: true
+	},
+	formatted_durationtime: {
+	  type: String,
+	  computed: '_formatted_durationtime(duration)',
+	  notify: true
+	},
+	playing: {
+	  type: Boolean,
+	  value: null,
+	  notify: true
+	},
+	loading: {
+	  type: Boolean,
+	  value: null,
+	  notify: true
 	}
       },
+      listeners: {
+	playbtnclick: '_handlePlayClick',
+	clicked_timeline: '_handleTimelineClick'
+      },
+      _time_formatter: function(time){
+	var minutes = Math.floor( time / 60.0 ),
+	    seconds = Math.ceil( time % 60 );
+
+	if(seconds < 10) seconds = '0' + seconds;
+	
+	return '' + minutes + ':' + seconds;
+      },
+      _formatted_currenttime: function(currenttime){
+	return this._time_formatter(currenttime);
+      },
+      _formatted_durationtime: function(duration){
+	return this._time_formatter(duration);
+      },
+      _handleTimelineClick: function(evt){
+	if(this.audio_object.currentlyActive === this){
+	  this.audio_object.currentTime = evt.srcElement.playhead;
+	}else{
+	  this.startPlayheadAt = evt.srcElement.playhead;
+	  this._handlePlayClick();
+	}
+      },	
       _audio_object: function(audio_id){
 	return window.document.querySelector('#'+audio_id);
       },
@@ -52,8 +116,15 @@
 	* left off.  Don't store...
 	*/
 	if(this === this.audio_object.currentlyActive){
+
+	  if(this.loading) return;
+
 	  if(this.audio_object.paused){
+
 	    this.audio_object.play();
+	    if(this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
+	      this.audio_object.currentTime = this.startPlayheadAt;
+	    }
 	  }else{
 	    this.audio_object.pause();
 	  }
@@ -61,8 +132,10 @@
 
 	  // pause whatever audio is currently playing.
 	  this.audio_object.pause();
+
 	  // store a reference to the currently active player state
 	  this.audio_object.currentlyActive = this;
+
 	  // copy internal sources to the audio tag and start loading
 	  this.audio_object.innerHTML = this.$.audiotag.innerHTML;
 	  this.audio_object.load();
@@ -73,23 +146,20 @@
       // audio event handlers....
       _handleLoadStart: function(e, detail){
 	if(detail.sender.currentlyActive === this){
-	  this.play_btn.loading = true;
+	  this.loading = true;
 	} else {
 	  // everything that isn't currently active should be in the paused state
-	  this.play_btn.playing = false;
-	  this.play_btn.loading = false;
+	  this.playing = false;
+	  this.loading = false;
 	}
       },
       _handleMetaData: function(e, detail){
 	if(detail.sender.currentlyActive === this){
 	  this.duration = this.audio_object.duration; 	  
-	}else{
-	  // make sure button state is paused
-	  
-	}
+	}      
       },
       _setPlayState: function(){
-	this.play_btn.playing = !this.audio_object.paused;
+	this.playing = !this.audio_object.paused;
       },
       _handlePause: function(e, detail){
 	if(detail.sender.currentlyActive === this){
@@ -103,18 +173,73 @@
       },
       _handleCanPlay: function(e, detail){
 	if(detail.sender.currentlyActive === this){
-	  this.play_btn.loading = false;	
-	  this.audio_object.play();
+	  //this.loading = false;	
+	  this.audio_object.play(); 
+	  if(this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
+	    this.audio_object.currentTime = this.startPlayheadAt;
+	  }
 	}
       },
       _handleTimeUpdate: function(e, detail){
 	if(detail.sender.currentlyActive === this){
-	  this.currentTime = this.audio_object.currentTime;
+	  var current_time = this.audio_object.currentTime,
+	      new_second = Math.ceil(current_time);
+
+	  this.loading = false;
+	  if(new_second != this.currentsecond){
+	    this.currentsecond = new_second; 
+	  }
+
+	  this.currenttime = '' + current_time; 
+	  this.startPlayheadAt = '' + current_time;
 	}
       },
-      // end audio event handlers....
+      _handleWaiting: function(e, detail){
+	if(detail.sender.currentlyActive === this){
+	  this.loading = true;
+	}
+      },
       ready: function(){
-	this.play_btn = this.$.playbutton.querySelector('mxray-play-button');
+	this.playing = false;
+	this.loading = false;
+	this.duration = 0;
+	this.currenttime = 0;
+
+	var ctx = this;
+	/* allows us to get the duration information for tracks. Some tricky stuff here */
+	/* notice the audio element is never added to the scope of the page */
+	ctx.__temp_auto_load_function__ = function(){	
+	  if(this.initload === "metasingle") {
+	    ctx.loading = true;
+	    var sources = this.$.audiotag.querySelectorAll('source');
+	    var mp3str = null;
+	    for(var i = 0; i < sources.length; i++){
+	      var src = sources[i];
+	      if(src.type === "audio/mpeg"){
+		mp3str = src.src;
+		break;
+	      }
+	    }
+	    if(!mp3str) return;
+	    var audio = document.createElement('audio');
+	    var listener = function listener(){
+	      audio.removeEventListener('loadedmetadata',listener, false);
+	      ctx.loading = false;
+	      // this is the entire point of this operation we want the duration without the rest of the audio.
+	      ctx.duration = audio.duration;
+	      /* this code stops buffering after we get the info we want */
+	      audio.pause();
+	      audio.src="";
+	      audio.load();
+	      /* try to remove any sign of the audio element from the browser so we don't se a performance issue */
+	      delete ctx.__temp_auto_load_function__;
+	    };
+	    audio.addEventListener('loadedmetadata', listener, false);
+	    audio.src = mp3str;
+	  }
+	};
+	ctx.__temp_auto_load_function__();
+
       }
     });
   </script>

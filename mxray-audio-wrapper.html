@@ -6,7 +6,7 @@ Polymer({
   ready: function(){
     // basically this element acts as a bridge to help get audio events into polymer elements
     var ctx = this;
-    ["loadedmetadata", "loadstart", "play", "pause", "abort", "canplay", "error", "seeked", "stalled", "suspend", "timeupdate", "waiting"].forEach(function(item){
+    ["loadedmetadata", "loadstart", "play", "pause", "abort", "canplay", "error", "timeupdate", "seeking", "waiting"].forEach(function(item){
       this.addEventListener(item, function(evt){
 	ctx.fire('iron-signal', {name: 'audio' + item, data: {origEvent: evt, sender: ctx }});
       });
