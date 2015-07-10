@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../iron-ajax/iron-ajax.html">
     <link rel="import" href="../mxray-play-button/mxray-play-button.html">
     <link rel="import" href="../mxray-play-scrubber/mxray-play-scrubber.html">
+    <link rel="import" href="../mxray-annotated-scrubber/mxray-annotated-scrubber.html">
     <link rel="import" href="mxray-player-container.html">
     <link rel="import" href="mxray-audio-wrapper.html">
     <style>
-      mxray-play-scrubber {
+      mxray-play-scrubber, mxray-annotated-scrubber {
 	display: block; 
 	width: 200px; 
 	height: 30px;
+	border: 1px solid black;
       }
     </style>
   </head>
@@ -25,9 +28,10 @@
 
     <!-- connects all the UI components to an external audio component -->
     <!-- If an external audio selector is provided the control will use that as it's source -->
-    <!-- If there is an audio tag inside of the player container, the sources of that audio tag will 
-    be synced to the external audio sources before playing this is the component we use to wire all these pieces together.
-    the player container basically listens to and controls the mxray-global-audio
+    <!-- 
+      If there is an audio tag inside of the player container, the sources of that audio tag will 
+      be synced to the external audio sources before playing this is the component we use to wire all these pieces together.
+      the player container basically listens to and controls the mxray-global-audio
     -->
     
     <template is="dom-bind">
@@ -51,22 +55,24 @@
 	<!-- audio playing show the play button -->
 	<br/><br/>
 	<hr/>
+	<span> Last annotation clicked <span>{{last_selected.annotation}}</span></span>
+	<br/>
 	<mxray-play-button style="display:block;" playing="{{_audioPlaying}}" loading="{{_audioLoading}}">	
 	  <span class="play">Play</span>
 	  <span class="pause">Pause</span>
 	  <span class="loading">Loading</span>
 	</mxray-play-button>
 	<!-- useful to have a scrub bar, final version will not require it -->
-	<!-- inline styles suck but hey whatever -->
 	<template is="dom-if" if="{{_audioDuration}}">
 	  <mxray-play-scrubber  
 	    playhead="{{_audioCurrentTime}}" 
 	    duration="{{_audioDuration}}"></mxray-play-scrubber>	
 	</template>
+	<iron-ajax auto url="demo.json" handle-as="json" last-response="{{lastResponse}}"></iron-ajax>
 	<!-- we will have a second scrub bar that can take markers -->		
-
-	
+	<mxray-annotated-scrubber last_selected="{{last_selected}}" playhead="{{_audioCurrentTime}}" duration="{{_audioDuration}}" markers="{{lastResponse}}"></mxray-annotated-scrubber>	
 	<span>{{_formattedCurrentTime}}</span> &mdash; <span>{{_formattedDurationTime}}</span>
+	<span>Current Second</span><span>{{_currentSecond}}</span>
 	<!-- eventual support for volume control -->
 	<!-- eventual support for visualization -->
 
@@ -113,8 +119,6 @@
 	    duration="{{_audioDuration}}"></mxray-play-scrubber>	
 	</template>
 	<!-- we will have a second scrub bar that can take markers -->		
-
-	
 	<span>{{_formattedCurrentTime}}</span> &mdash; <span>{{_formattedDurationTime}}</span>
 	<!-- eventual support for volume control -->
 	<!-- eventual support for visualization -->

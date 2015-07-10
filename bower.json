@@ -27,8 +27,12 @@
   "dependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.3",
     "polymer": "polymer/polymer#^1.0.3",
+    "iron-signal": "PolymerElements/iron-signals#^1.0.1"
+  },
+  "devDependencies": {
     "mxray-play-button": "latest",
     "mxray-play-scrubber": "latest",
-    "iron-signal": "PolymerElements/iron-signals#^1.0.1"
+    "mxray-annotated-scrubber": "latest",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.0.1"
   }
 }
