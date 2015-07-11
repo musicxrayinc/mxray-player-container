@@ -97,10 +97,11 @@
 	return this._time_formatter(duration);
       },
       _handleTimelineClick: function(evt){
+	var playhead = evt.detail.sender.playhead;
+	this.startPlayheadAt = playhead;
 	if(this.audio_object.currentlyActive === this){
-	  this.audio_object.currentTime = evt.srcElement.playhead;
+	  this.audio_object.currentTime = playhead;
 	}else{
-	  this.startPlayheadAt = evt.srcElement.playhead;
 	  this._handlePlayClick();
 	}
       },	
@@ -137,8 +138,34 @@
 	  this.audio_object.currentlyActive = this;
 
 	  // copy internal sources to the audio tag and start loading
-	  this.audio_object.innerHTML = this.$.audiotag.innerHTML;
-	  this.audio_object.load();
+	  // firefox can not handle the m3u8 and can't properly detect it
+	  // furthermore it doesn't seem to like the idea of swapping out the innterHTML...
+	  // what a useless piece of shit... Thus it's vital you have an mpeg type 
+	  // audio source or else this player won't work in firefox.
+	  var isFirefox = typeof InstallTrigger !== 'undefined';
+	  if(isFirefox){
+	    // set the source from the mp3...
+	    var sources = this.$.audiotag.querySelectorAll('source'),
+		mp3str = null;
+	    for(var i = 0; i < sources.length; i++){
+	      var src = sources[i];
+	      if(src.type === "audio/mpeg"){
+		mp3str = src.src;
+		break;
+	      }
+	    }
+	    this.audio_object.src = mp3str;
+	    this.audio_object.load();
+	    // events don't fire the same in firefox that they do in other browsers so we need to actually call play()
+	    // to find out if we can play....
+	    this.audio_object.play();
+	  }else{
+	    // all other browsers allow a much simpler route.
+	    this.audio_object.innerHTML = this.$.audiotag.innerHTML;
+	    this.audio_object.load();
+	  }
+
+
 	}
 	
       },
@@ -175,9 +202,14 @@
 	if(detail.sender.currentlyActive === this){
 	  //this.loading = false;	
 	  this.audio_object.play(); 
+
+	  // firefox is weird when it comes to this event, since it's no mission critical 
+	  // there is no need to run for firefox
+
 	  if(this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
 	    this.audio_object.currentTime = this.startPlayheadAt;
 	  }
+
 	}
       },
       _handleTimeUpdate: function(e, detail){
