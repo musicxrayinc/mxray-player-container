@@ -273,8 +273,8 @@
 
 	    audio.src = mp3str;
 	    // sometimes the meta data event doesn't fire until you hit load and play()
+	    audio.volume = 0;
 	    audio.load();
-	    audio.volume = 1;
 	    audio.play();
 	  }
 	};
