@@ -97,12 +97,12 @@
 	      return this._time_formatter(duration);
       },
       _handleTimelineClick: function(evt){
-        this.__just_clicked_skip__ = true;
         var playhead = evt.detail.sender.playhead;
         this.startPlayheadAt = playhead;
         if(this.audio_object.currentlyActive === this){
           this.audio_object.currentTime = playhead;
         }else{
+          this.__just_clicked_skip__ = true;
           this._handlePlayClick();
         }
       },	
@@ -206,6 +206,8 @@
           // there is no need to run for firefox
 
           if(this.__just_clicked_skip__ && this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
+            console.log("this.__just_clicked_skip__");
+            console.log("what the hell is going on");
             this.audio_object.currentTime = this.startPlayheadAt;
             delete this.__just_clicked_skip__;
           }
@@ -285,3 +287,4 @@
     });
   </script>
 </dom-module>
+
