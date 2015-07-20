@@ -7,6 +7,15 @@ Polymer({
     // basically this element acts as a bridge to help get audio events into polymer elements
     var ctx = this;
     ["loadedmetadata", "loadstart", "play", "pause", "abort", "canplay", "error", "timeupdate", "seeking", "waiting"].forEach(function(item){
+      // we want to stop the player from playing when there isn't a way to control it on the page....
+      if(item === "timeupdate" && ctx.currentlyActive){
+        // this means the object has been removed from the dom so clearly it's not visible
+        if(ctx.currentlyActive.offsetParent === null){
+          if(!ctx.paused){
+            ctx.pause();
+          }
+        } 
+      }
       this.addEventListener(item, function(evt){
 	ctx.fire('iron-signal', {name: 'audio' + item, data: {origEvent: evt, sender: ctx }});
       });
