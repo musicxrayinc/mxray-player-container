@@ -260,14 +260,17 @@
               ctx.duration = audio.duration || 0;
 
               /* this code stops buffering after we get the info we want */
-              audio.pause();
-              audio.src="";
-              audio.load();
+              // placed in setTimeout to "fix" ie problem, monitor IE for signs that this is no longer needed.
+              setTimeout(function(){
+                audio.pause();
+                audio.src="";
+                audio.load();
+                // remove event listeners after about a second or so...  The reason for the delay is because IE does some strange event handling
+                // and it looks like if we remove it too soon you can get some strange behavior.
+                audio.removeEventListener('loadedmetadata', metalistener, false);
+                delete ctx.__temp_auto_load_function__;
+              }, 1000);
 
-              // remove event listeners after about a second or so...  The reason for the delay is because IE does some strange event handling
-              // and it looks like if we remove it too soon you can get some strange behavior.
-              audio.removeEventListener('loadedmetadata', metalistener, false);
-              delete ctx.__temp_auto_load_function__;
             };
             audio.addEventListener('loadedmetadata', metalistener, false);
 
