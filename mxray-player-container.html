@@ -255,9 +255,6 @@
             if(!mp3str) return;
             var audio = document.createElement('audio');
             var metalistener = function metalistener(){
-              audio.removeEventListener('loadedmetadata', metalistener, false);
-              audio.removeEventListener('stalled', metalistener, false);
-              audio.removeEventListener('error', metalistener, false);
               ctx.loading = false;
               // this is the entire point of this operation we want the duration without the rest of the audio.
               ctx.duration = audio.duration || 0;
@@ -265,8 +262,15 @@
               audio.pause();
               audio.src="";
               audio.load();
-              /* try to remove any sign of the audio element from the browser so we don't see a performance issue */
-              delete ctx.__temp_auto_load_function__;
+              // remove event listeners after about a second or so...  The reason for the delay is because IE does some strange event handling
+              // and it looks like if we remove it too soon you can get some strange behavior.
+              setTimeout(function(){
+                audio.removeEventListener('loadedmetadata', metalistener, false);
+                audio.removeEventListener('stalled', metalistener, false);
+                audio.removeEventListener('error', metalistener, false);
+                delete ctx.__temp_auto_load_function__;
+              }, 1000);
+
             };
             audio.addEventListener('loadedmetadata', metalistener, false);
             audio.addEventListener('stalled', metalistener, false);
