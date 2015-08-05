@@ -76,6 +76,11 @@
           type: Boolean,
           value: null,
           notify: true
+        },
+        /* sometimes with data binding it's useful to delay loading for a couple milliseconds */
+        delayLoading: {
+          type: Number,
+          value: 0
         }
       },
       listeners: {
@@ -290,7 +295,13 @@
             audio.play();
           }
         };
-        ctx.__temp_auto_load_function__();
+        if(ctx.delayLoading){
+          setTimeout(function(){
+            ctx.__temp_auto_load_function__();
+          }, ctx.delayLoading);
+        }else{
+          ctx.__temp_auto_load_function__();
+        }
 
       }
     });
