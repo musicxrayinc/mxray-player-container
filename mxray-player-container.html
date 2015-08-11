@@ -210,10 +210,6 @@
           // firefox is weird when it comes to this event, since it's no mission critical 
           // there is no need to run for firefox
 
-          if(this.__just_clicked_skip__ && this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
-            this.audio_object.currentTime = this.startPlayheadAt;
-            delete this.__just_clicked_skip__;
-          }
 
         }
       },
@@ -222,13 +218,19 @@
           var current_time = this.audio_object.currentTime,
               new_second = Math.ceil(current_time);
 
-          this.loading = false;
-          if(new_second != this.currentsecond){
-            this.currentsecond = new_second; 
-          }
+          if(this.__just_clicked_skip__ && this.startPlayheadAt !== "" && typeof this.startPlayheadAt !== "undefined" ){
+            this.audio_object.currentTime = this.startPlayheadAt;
+            delete this.__just_clicked_skip__;
+          } else {
 
-          this.currenttime = '' + current_time; 
-          this.startPlayheadAt = '' + current_time;
+            this.loading = false;
+            if(new_second != this.currentsecond){
+              this.currentsecond = new_second; 
+            }
+
+            this.currenttime = '' + current_time; 
+            this.startPlayheadAt = '' + current_time;
+          }
         }
       },
       _handleWaiting: function(e, detail){
