@@ -238,13 +238,21 @@
           this.loading = true;
         }
       },
-      ready: function(){
-        this.playing = false;
-        this.loading = false;
-        this.duration = 0;
-        this.currenttime = 0;
-
+      created: function(){
+        
+      },
+      _initSong: function(){
+        
         var ctx = this;
+
+        ctx.playing = false;
+        ctx.loading = false;
+        ctx.duration = 0;
+        ctx.currenttime = 0;
+        
+        ctx.audio_object.currentlyActive = null;
+
+
         /* allows us to get the duration information for tracks. Some tricky stuff here */
         /* notice the audio element is never added to the scope of the page */
         ctx.__temp_auto_load_function__ = function(){	
@@ -304,6 +312,25 @@
         }else{
           ctx.__temp_auto_load_function__();
         }
+      },
+      ready: function(){
+        // basically whenever the audio changes we need to re-initialize the element
+        // the only way I could see to do this was to use a MutationObserver seems to work well
+        var ctx = this;
+        ctx._initSong();
+
+        var observer = new MutationObserver(function(){
+              console.log("calling this mutation observer");
+              ctx._initSong();
+            });
+        
+        observer.observe(this.$.audiotag,{
+                  attributes: true,
+                  childList: true,
+                  characterData: true,
+                  characterDataOldValue: true,
+                  subtree: true
+                });
 
       }
     });
