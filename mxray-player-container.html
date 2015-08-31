@@ -319,11 +319,7 @@
         var ctx = this;
         ctx._initSong();
 
-        var observer = new MutationObserver(function(){
-              console.log("calling this mutation observer");
-              ctx._initSong();
-            });
-        
+        var observer = new MutationObserver(function(){ ctx._initSong(); });
         observer.observe(this.$.audiotag,{
                   attributes: true,
                   childList: true,
